@@ -2,99 +2,159 @@
 #define GAMEMANAGER_H
 
 #include<iostream>
-#include<cmath>
+#include"Proyectile.h"
 
 class GameScene{
     private:
-        int framesLft;
+        int winner;
+        int framesLft; //cada frame representa 0.1 segundos(estimacion), las partidas duran un maximo de 50 frames
         int ySize, xSize;
+        int xBorder, yBorder;
+        bool gameRunning;
+
     public:
+        GameScene();
+        PlayableChar *players[2];
+        Proyectile *p1Proy[6];
+        Proyectile *p2Proy[6];
+        void Update(); //Actualizacion de un solo frame, manda a llamar otros Updates
+        void CheckColAll(Proyectile *proy); //Checar todas las colisiones posibles para un proyectil
+        void CheckColAll(PlayableChar *character); //Checar todas las colisiones posibles para un personaje, se omiten los proyectiles pues esos se evaluan primero
+
+        //getters
+        bool IsGameRunning(); 
+        int GetWinner();
 
 
 };
 
-//clase para manejar colisiones en forma rectangular
-class Hitbox{
+class GameManager{
     private:
-        float posX;
-        float posY;
-        int width;
-        int height;
+        int playerCharacter;
+        int AnalyseChoice(std::string in);
     public:
-        Hitbox(int w, int h);
-        float GetPosX();
-        float GetPosY();
-
-        //Funciones para Checar colisiones con circulo y otro recatngulo
-        bool CheckCol(Hitbox *target);
-        bool CheckCol(HitCircle *target);
-
+        GameScene game;
+        GameManager();
+        void Menu();
+        void StartGame();
+        void GameLoop();
 };
 
-//Clase para manejar colisiones en forma circular
-class HitCircle{
-    private:
-        int radius;
-        float posX, posY;
-    public:
-        HitCircle(int radius);
-        int GetRadius();
-        float GetPosX();
-        float GetPosY();
-        bool CheckCol(Hitbox *target);
-        bool CheckCol(HitCircle *target);
-        void Move(float x, float y);
-};
-
-Hitbox::Hitbox(int w, int h){
-    height = h;
-    width = w;
-    posX = 0;
-    posY = 0;
+GameScene::GameScene(){
+    winner = 0;
+    framesLft = 3600;
+    xSize = 200;
+    ySize = 150;
+    xBorder = xSize/2;
+    yBorder = ySize;
 }
 
-float Hitbox::GetPosX(){
-    return posX;
+void GameScene::Update(){
+
+    if (players[0]->GetHealth() <= 0){
+        gameRunning = 0;
+        winner = 2;
+    }
+    if (players[1]->GetHealth() <=0){
+        gameRunning = 0;
+        winner = 1;
+    }
 }
 
-float Hitbox::GetPosY(){
-    return posY;
+bool GameScene::IsGameRunning(){ return gameRunning; }
+int GameScene::GetWinner(){ return winner; }
+
+GameManager::GameManager() : game(){
+
+}
+void GameManager::Menu(){
+    std::string input;
+
+    while (true){
+        std::cout << "Selecciona a tu personaje:\n 1. Robot \n 2. Wizzard\n";
+        std::cin >> input;
+
+        if (input == "1" || input == "Robot"){
+            game.players[0] = new Robot(1);
+            playerCharacter = 1;
+            break;
+        }else if (input == "2" || input == "Wizzard"){
+            game.players[0] = new Wizzard(1);
+            playerCharacter = 2;
+            break;
+        }else{
+            std::cout << "Seleccion invalida, solo se aceptan numeros del 1 al 2 o nombres de personajes definidos\n";
+        }
+
+    }
+
+    while (true){
+        std::cout << "Selecciona a tu enemigo:\n 1. Robot \n 2. Wizzard\n";
+        std::cin >> input;
+
+        if (input == "1" || input == "Robot"){
+            game.players[1] = new Robot(2);
+            break;
+        }else if (input == "2" || input == "Wizzard"){
+            game.players[1] = new Wizzard(2);
+            break;
+        }else{
+            std::cout << "Seleccion invalida, solo se aceptan numeros del 1 al 2 o nombres de personajes definidos\n";
+        }
+
+    }
 }
 
-bool Hitbox::CheckCol(Hitbox *target){
-
+void GameManager::StartGame(){
+    std::cout <<"la wea inutil;";
 }
 
-HitCircle::HitCircle(int rad){
-    radius = rad;
-    posX = 0;
-    posY = 0;
+void GameManager::GameLoop(){
+    std::string input;
+    int userInt;
+
+    while (game.IsGameRunning()){
+        game.players[0]->PlayerChoice();
+        std::cin >> input;
+        userInt = AnalyseChoice(input);
+        game.players[0]->Do(userInt, game.players[1]);
+
+        game.Update();
+        break;
+    }
+
+    std::cout <<"Juego terminado, gana el jugador " << game.GetWinner();
 }
 
-int HitCircle::GetRadius(){
-    return radius;
+int GameManager::AnalyseChoice(std::string in){
+    int value = 0;
+
+    if (playerCharacter == 1){
+        if ( in == "Wait") value = DOWAIT;
+        else if (in == "Jump") value = DOJUMP;
+        else if (in == "Dash") value = DODASH;
+        else if (in == "Super Dash") value = DOSDASH;
+        else if (in == "Block") value = DOBLOCK;
+        else if (in == "Bounds Check") value = ROBDOBOUNDS;
+        else if (in == "Grab") value = ROBDOGRAB;
+        else if (in == "LOIC") value = ROBDOLOIC;
+        else if (in == "Punch") value = ROBDOPUNCH;
+        else if (in == "Try Catch") value = ROBDOTRYCATCH;
+
+    }else if(playerCharacter = 2){
+        if ( in == "Wait") value = DOWAIT;
+        else if (in == "Jump") value = DOJUMP;
+        else if (in == "Dash") value = DODASH;
+        else if (in == "Super Dash") value = DOSDASH;
+        else if (in == "Block") value = DOBLOCK;
+        else if (in == "Magic Dart") value = WIZDODART;
+        else if (in == "Geyser") value = WIZDOGEYSER;
+        else if (in == "Missile Form") value = WIZDOMISSILE;
+        else if (in == "Orb") value = WIZDOORB;
+        else if (in == "Tome Slap") value = WIZDOTSLAP;
+    }
+
+    return value;
 }
-
-float HitCircle::GetPosX(){
-    return posX;
-}
-
-float HitCircle::GetPosY(){
-    return posY;
-}
-
-bool HitCircle::CheckCol(HitCircle *target){
-    float distX = (target->GetPosX() - posX);
-    float distY = (target->GetPosY() - posY);
-    float dist = sqrt((distX*distX)+(distY*distY));
-
-    bool hasCol = dist <= radius + target->GetRadius();
-
-    return hasCol;
-}
-
-void HitCircle::Move(float x, float y){
-    posX = x;
-    posY = y;
-}
+  
 #endif
