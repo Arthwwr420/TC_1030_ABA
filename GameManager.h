@@ -20,6 +20,7 @@ class GameScene{
         void Update(); //Actualizacion de un solo frame, manda a llamar otros Updates
         void CheckColAll(Proyectile *proy); //Checar todas las colisiones posibles para un proyectil
         void CheckColAll(PlayableChar *character); //Checar todas las colisiones posibles para un personaje, se omiten los proyectiles pues esos se evaluan primero
+        bool CanPause(); //regresa si todo esta listo para otro turno (no hay frames de espera en ningun jugador)
 
         //getters
         bool IsGameRunning(); 
@@ -51,6 +52,10 @@ GameScene::GameScene(){
 
 void GameScene::Update(){
 
+    players[0]->Update();
+    players[1]->Update();
+
+    
     if (players[0]->GetHealth() <= 0){
         gameRunning = 0;
         winner = 2;
@@ -59,10 +64,19 @@ void GameScene::Update(){
         gameRunning = 0;
         winner = 1;
     }
+
+    framesLft --;
+    if (framesLft <= 0) gameRunning = 0;
 }
 
 bool GameScene::IsGameRunning(){ return gameRunning; }
 int GameScene::GetWinner(){ return winner; }
+
+bool GameScene::CanPause(){
+    if(players[0]->GetWaitFrames() <= 0 && players[1]->GetWaitFrames() <= 0){
+        return true;
+    }else{ return false; }
+}
 
 GameManager::GameManager() : game(){
 
@@ -114,16 +128,25 @@ void GameManager::GameLoop(){
     int userInt;
 
     while (game.IsGameRunning()){
+        std::cout<<"Jugador 1 en " << game.players[0]->hitbox.GetPosX() << ", "<< game.players[0]->hitbox.GetPosY()<<"\n";
+        std::cout<<"Jugador 2 en "<< game.players[1]->hitbox.GetPosX()<< ", "<< game.players[1]->hitbox.GetPosY()<<"\n";
+
         game.players[0]->PlayerChoice();
         std::cin >> input;
+        game.players[1]->Do(DOWAIT, game.players[0]);
         userInt = AnalyseChoice(input);
         game.players[0]->Do(userInt, game.players[1]);
 
-        game.Update();
-        break;
+        while (!game.CanPause()){
+            game.Update();
+            std::cout<<"Ha pasao un frame\n";
+
+        }
+        
     }
 
     std::cout <<"Juego terminado, gana el jugador " << game.GetWinner();
+    std::getline(std::cin, input);
 }
 
 int GameManager::AnalyseChoice(std::string in){
@@ -133,25 +156,25 @@ int GameManager::AnalyseChoice(std::string in){
         if ( in == "Wait") value = DOWAIT;
         else if (in == "Jump") value = DOJUMP;
         else if (in == "Dash") value = DODASH;
-        else if (in == "Super Dash") value = DOSDASH;
+        else if (in == "SuperDash") value = DOSDASH;
         else if (in == "Block") value = DOBLOCK;
-        else if (in == "Bounds Check") value = ROBDOBOUNDS;
+        else if (in == "BoundsCheck") value = ROBDOBOUNDS;
         else if (in == "Grab") value = ROBDOGRAB;
         else if (in == "LOIC") value = ROBDOLOIC;
         else if (in == "Punch") value = ROBDOPUNCH;
-        else if (in == "Try Catch") value = ROBDOTRYCATCH;
+        else if (in == "TryCatch") value = ROBDOTRYCATCH;
 
-    }else if(playerCharacter = 2){
+    }else if(playerCharacter == 2){
         if ( in == "Wait") value = DOWAIT;
         else if (in == "Jump") value = DOJUMP;
         else if (in == "Dash") value = DODASH;
-        else if (in == "Super Dash") value = DOSDASH;
+        else if (in == "SuperDash") value = DOSDASH;
         else if (in == "Block") value = DOBLOCK;
-        else if (in == "Magic Dart") value = WIZDODART;
+        else if (in == "MagicDart") value = WIZDODART;
         else if (in == "Geyser") value = WIZDOGEYSER;
-        else if (in == "Missile Form") value = WIZDOMISSILE;
+        else if (in == "MissileForm") value = WIZDOMISSILE;
         else if (in == "Orb") value = WIZDOORB;
-        else if (in == "Tome Slap") value = WIZDOTSLAP;
+        else if (in == "TomeSlap") value = WIZDOTSLAP;
     }
 
     return value;
