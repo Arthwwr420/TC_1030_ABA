@@ -163,6 +163,7 @@ int GameManager::AnalyseChoice(std::string in){
         else if (in == "LOIC") value = ROBDOLOIC;
         else if (in == "Punch") value = ROBDOPUNCH;
         else if (in == "TryCatch") value = ROBDOTRYCATCH;
+        else value = DOWAIT;
 
     }else if(playerCharacter == 2){
         if ( in == "Wait") value = DOWAIT;
@@ -175,6 +176,7 @@ int GameManager::AnalyseChoice(std::string in){
         else if (in == "MissileForm") value = WIZDOMISSILE;
         else if (in == "Orb") value = WIZDOORB;
         else if (in == "TomeSlap") value = WIZDOTSLAP;
+        else value = DOWAIT;
     }
 
     return value;
