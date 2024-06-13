@@ -17,33 +17,28 @@ const int ROBDOBOUNDS = 8;
 const int ROBDOLOIC = 9;
 
 const int WIZDOTSLAP = 5;
-const int WIZDODART = 6;
 const int WIZDOGEYSER = 7;
 const int WIZDOMISSILE = 8;
-const int WIZDOORB = 9;
 
 //clase comun de todos los personajes jugables
 class PlayableChar{
     protected:
         int playerNum;
         int MaxHealth;
-        int health;
-        int frames2Wait; 
-        float burstCharge;
-        int ignoreFric;
+        int health; 
+        int frames2Wait; //numero de frames a esperar antes de poder tener un turno
+        int ignoreFric; //numero de frames en los que se ignora la friccion
         float superCharge;
         int superMeter;
-        int maxFreeCancels;
         int maxAirOptions;
-        int airOptions;
-
-        int dirMultiplier;
+        int airOptions; //numero de acciones de movimiento que se pueden hacer en el aire
+        int dirMultiplier; //solo 1 o -1, dirige el ataque hacie el enemigo en el eje x
 
         bool blocking;
         bool OnGround();
         bool isAttacking;
-        int AtkFrames;
-        int currDmg;
+        int AtkFrames; //numero de frames en los que la accion actual puede hacer daño
+        int currDmg; //cantidad de daño actual
 
         float yMomentum;
         float xMomentum;
@@ -73,7 +68,6 @@ class PlayableChar{
 
 class Robot : public PlayableChar{
     private:
-        float fuel;
         int loic;
         void LOIC(PlayableChar *target, int x);
     
@@ -94,7 +88,6 @@ class Robot : public PlayableChar{
 class Wizzard: public PlayableChar{
     private:
         float gravity;
-        void Orb(PlayableChar *target);
 
     public:
         Wizzard(int player);
@@ -104,11 +97,9 @@ class Wizzard: public PlayableChar{
         void SuperDash();
         void Jump(float xForce, float yForce);
         void TomeSlap(PlayableChar *target);
-        void SummonMagicDart(PlayableChar *target, float xForce, float yForce);
         void Geyser(PlayableChar *target, float xDir, float yDir);
         void MissileFormRequest(PlayableChar *target);
         void MissileForm(float xDir, float yDir, PlayableChar *target);
-        void OrbRequest(PlayableChar *target);
 };
 
 void PlayableChar::TakeDamage(int dmg){
@@ -182,11 +173,12 @@ void PlayableChar::Update(){
     hitbox.MoveTowards(xMomentum*0.1, yMomentum*0.1);
     atkHbox.MoveTowards(xMomentum*0.1, yMomentum*0.1);
 
-    if (OnGround()) hitbox.MoveTo(hitbox.GetPosX(), 1.5f);
+    if (OnGround()){
+        hitbox.MoveTo(hitbox.GetPosX(), 1.5f);
+        airOptions = maxAirOptions;
+    } 
 
-    airOptions = maxAirOptions;
 
-    burstCharge += 0.02;
 
     superCharge += 0.05;
     if(superMeter >= 9)
@@ -210,16 +202,14 @@ Robot::Robot(int player){
     MaxHealth = 110;
     playerNum = player;
     health = MaxHealth;
-    burstCharge = 0;
     superMeter = 0;
     frames2Wait = 0;
     superCharge = 0;
-    maxFreeCancels = 2;
-    fuel = 100;
     loic = 0;
     xMomentum = 0;
     yMomentum = 0;
     maxAirOptions = 0;
+    isAttacking = 0;
 
     if(player == 1){
         hitbox.MoveTo(-5, 1.5);
@@ -247,6 +237,7 @@ void Robot::Do(int choice, PlayableChar *target){
     currentTar = nullptr;
     dirMultiplier = (target->hitbox.GetPosX() < hitbox.GetPosX()) ? -1 : 1;
     blocking = 0;
+    isAttacking = 0;
     switch (choice)
     {
     case DOWAIT:
@@ -312,6 +303,7 @@ void Robot::Jump(float xForce, float yForce){
 }
 
 void Robot::Punch(PlayableChar *target){
+    isAttacking = 1;
     currentTar = target;
     currDmg = 90;
     atkHbox.ChangeDim(4, 1);
@@ -321,6 +313,7 @@ void Robot::Punch(PlayableChar *target){
 }
 
 void Robot::Bounds(PlayableChar *target){
+    isAttacking = 1;
     currentTar = target;
     currDmg = 20;
     atkHbox.ChangeDim(4, 3);
@@ -331,6 +324,7 @@ void Robot::Bounds(PlayableChar *target){
 }
 
 void Robot::Grab(PlayableChar *target){
+    isAttacking = 1;
     currentTar = target;
     currDmg = 30;
     atkHbox.ChangeDim(9, 2);
@@ -340,6 +334,7 @@ void Robot::Grab(PlayableChar *target){
 }
 
 void Robot::TryCatch(PlayableChar *target){
+    isAttacking = 1;
     currentTar = target;
     currDmg = 30;
     atkHbox.ChangeDim(5, 3);
@@ -367,6 +362,7 @@ void Robot::LOICRequest(PlayableChar *target){
 }
 
 void Robot::LOIC(PlayableChar *target, int x){
+    isAttacking = 1;
     currentTar = target;
     currDmg = 50;
     atkHbox.ChangeDim(5, 100);
@@ -379,16 +375,15 @@ Wizzard::Wizzard(int player){
     MaxHealth = 100;
     playerNum = player;
     health = MaxHealth;
-    burstCharge = 0;
     superMeter = 0;
     frames2Wait = 0;
     superCharge = 0;
-    maxFreeCancels = 2;
     gravity = 100.0f;
     xMomentum = 0;
     yMomentum = 0;
     maxAirOptions = 2;
     airOptions = maxAirOptions;
+    isAttacking = 0;
 
     if(player == 1){
         hitbox.MoveTo(-5, 1.5);
@@ -405,16 +400,14 @@ void Wizzard::PlayerChoice(){
         std::cout << "SuperDash\n";
     if ( OnGround() || airOptions >= 1)
         std::cout << "Jump\nDash\nMissileForm\n";
-    std::cout<<"Block\nTomeSlap\nMagicDart\nGeyser\n";
-    if (superMeter >= 3){
-        std::cout << "Orb\n";
-    }
+    std::cout<<"Block\nTomeSlap\nGeyser\n";
 }
 
 void Wizzard::Do(int choice, PlayableChar *target){
     currentTar = nullptr;
     dirMultiplier = (target->hitbox.GetPosX() < hitbox.GetPosX()) ? -1 : 1;
     blocking = 0;
+    isAttacking = 0;
 
     switch (choice)
     {
@@ -450,13 +443,22 @@ void Wizzard::Do(int choice, PlayableChar *target){
     }
 }
 
-void Wizzard::Dash(){ //por terminar cuando el Game Manager este listo :)
+void Wizzard::Dash(){
+    if(!OnGround()){
+        if(airOptions > 0 && gravity>0){
+            airOptions --;
+            gravity -= 10;
+        }else{
+            Wait();
+            return;
+        }
+    }
     frames2Wait = 8;
     xMomentum = 12*dirMultiplier;
     ignoreFric = 8;
 }
 
-void Wizzard::SuperDash(){ //por terminar cuando el Game Manager este listo :)
+void Wizzard::SuperDash(){ 
     frames2Wait = 15;
     xMomentum = 12*dirMultiplier;
     yMomentum = 5;
@@ -464,6 +466,17 @@ void Wizzard::SuperDash(){ //por terminar cuando el Game Manager este listo :)
 }
 
 void Wizzard::Jump(float xForce, float yForce){
+    if(!OnGround()){
+        if(airOptions > 0 && gravity>0){
+            airOptions --;
+            gravity -= 10;
+            std::cout <<"Accion fallida, no hay suficiente gravedad u Opciones Aereas\n";
+
+        }else{
+            Wait();
+            return;
+        }
+    }
     if(sqrt(xForce*xForce + yForce*yForce) < 1){
         frames2Wait = 8;
     }else{
@@ -475,6 +488,7 @@ void Wizzard::Jump(float xForce, float yForce){
 }
 
 void Wizzard::TomeSlap(PlayableChar *target){
+    isAttacking = 1;
     currentTar = target;
     currDmg = 15;
     atkHbox.ChangeDim(2, 2);
@@ -485,6 +499,7 @@ void Wizzard::TomeSlap(PlayableChar *target){
 }
 
 void Wizzard::Geyser(PlayableChar *target, float dirX, float dirY){
+    isAttacking = 1;
     currentTar = target;
     currDmg = 30;
     atkHbox.ChangeDim(20, 3);
@@ -511,6 +526,17 @@ void Wizzard::MissileFormRequest(PlayableChar *target){
 }
 
 void Wizzard::MissileForm(float xDir, float yDir, PlayableChar *target){
+    if(!OnGround()){
+        if(airOptions > 0 && gravity>0){
+            airOptions --;
+            gravity -= 10;
+        }else{
+            std::cout <<"Accion fallida, no hay suficiente gravedad u Opciones Aereas\n";
+            Wait();
+            return;
+        }
+    }
+    isAttacking = 1;
     currentTar = target;
     currDmg = 20;
     atkHbox.ChangeDim(4, 5);

@@ -2,24 +2,20 @@
 #define GAMEMANAGER_H
 
 #include<iostream>
-#include"Proyectile.h"
+#include"Character.h"
 
 class GameScene{
     private:
-        int winner;
+        int winner; //numero de jugador que gana, solo cambia y se usa cuando acaba el juego
         int framesLft; //cada frame representa 0.1 segundos(estimacion), las partidas duran un maximo de 50 frames
-        int ySize, xSize;
-        int xBorder, yBorder;
-        bool gameRunning;
+        int ySize, xSize; //tamaño del escenario
+        int xBorder, yBorder; //bordes
+        bool gameRunning; //define si el juego esta corriendo, si no, deja de actualizarse en el GameManager
 
     public:
         GameScene();
         PlayableChar *players[2];
-        Proyectile *p1Proy[6];
-        Proyectile *p2Proy[6];
         void Update(); //Actualizacion de un solo frame, manda a llamar otros Updates
-        void CheckColAll(Proyectile *proy); //Checar todas las colisiones posibles para un proyectil
-        void CheckColAll(PlayableChar *character); //Checar todas las colisiones posibles para un personaje, se omiten los proyectiles pues esos se evaluan primero
         bool CanPause(); //regresa si todo esta listo para otro turno (no hay frames de espera en ningun jugador)
 
         //getters
@@ -36,12 +32,12 @@ class GameManager{
     public:
         GameScene game;
         GameManager();
-        void Menu();
-        void StartGame();
-        void GameLoop();
+        void Menu(); //Funcion Para Iniciar el juego
+        void GameLoop(); //Maneja el loop del juego, el cual no acaba hasta que el juergo termine
 };
 
 GameScene::GameScene(){
+    gameRunning = 1; 
     winner = 0;
     framesLft = 3600;
     xSize = 200;
@@ -119,9 +115,6 @@ void GameManager::Menu(){
     }
 }
 
-void GameManager::StartGame(){
-    std::cout <<"la wea inutil;";
-}
 
 void GameManager::GameLoop(){
     std::string input;
@@ -139,14 +132,14 @@ void GameManager::GameLoop(){
 
         while (!game.CanPause()){
             game.Update();
-            std::cout<<"Ha pasao un frame\n";
+            std::cout<<"Ha pasado un frame\n";
 
         }
         
     }
 
     std::cout <<"Juego terminado, gana el jugador " << game.GetWinner();
-    std::getline(std::cin, input);
+    std::cin;
 }
 
 int GameManager::AnalyseChoice(std::string in){
@@ -171,10 +164,8 @@ int GameManager::AnalyseChoice(std::string in){
         else if (in == "Dash") value = DODASH;
         else if (in == "SuperDash") value = DOSDASH;
         else if (in == "Block") value = DOBLOCK;
-        else if (in == "MagicDart") value = WIZDODART;
         else if (in == "Geyser") value = WIZDOGEYSER;
         else if (in == "MissileForm") value = WIZDOMISSILE;
-        else if (in == "Orb") value = WIZDOORB;
         else if (in == "TomeSlap") value = WIZDOTSLAP;
         else value = DOWAIT;
     }
