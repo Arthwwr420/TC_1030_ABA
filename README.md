@@ -1,15 +1,25 @@
 # TC_1030_ABA
 # Simulador de Combates Epicos
-Este proyecto esta basado en el juego Your Only Move is Hustle, un juego de pelea basado en turnos. En el Proyecto el usuario elige sus movimientos con comandos en la consola al enfrentarse a un enemigo que aun no cuenta con movimientos. Se cuenta con 2 clases basadas en personajes del juego, cada una con sus propios movimientos distintos, asi como una clase para los proyectiles, una para controlar la escena  y una para manejar todo lo relacionado a la interaccion con el usuario.
+Este proyecto esta basado en el juego Your Only Move is Hustle, un juego de pelea basado en turnos. En el Proyecto el usuario elige sus movimientos con comandos en la consola al enfrentarse a un enemigo que aun no cuenta con movimientos. Se cuenta con 2 clases basadas en personajes del juego, cada una con sus propios movimientos distintos, asi como una para controlar la escena y otra para manejar todo lo relacionado a la interaccion con el usuario.
+
+## CORRECCIONES
+Evidencias Faltantes: 
+Herencia: 
+Las clases en Character.h Roboy y Wizzard, declaradas en las lineas 69 y 88 respectivamente, son clases con herencia de la clase abstracta PlayableChar
+
+Modificadores de acceso:
+Todas las clases tienen presentes los modificadores de acceso. Hay variables protegidas en PlayableChar ( Character.h, linea 25), asi como tabien las hay publicas ( linea 51 )
+
+Sobrecarga:
+La sobrecarga y Pollimorfismo se encuentran de igual manera en Character.h, uno de los metodos es PlayerChoice(), declarado en linea 56 en clase madre, en las lineas 76 y 94 para las heredadas y definido en las lineas 222 y 396.
+
 
 ### Personajes
-El ninja es una clase de corto alcance, pero de ataques rapidos y con prioridad (No implementado aun)
-El Cowboy es una clase basada principalmente en ataques cuerpo a cuerpo con espada de mediano a largo alcance, cuenta tambien con una pistola con 6 balas (No implementado Aun)
-El Mago es una clase que recompensa prepararse unos turnos con proyectiles de largo alcance (proyectiles aun no implementados)
+El Mago es una clase con ataques de largo alcance
 El Robot es una clase basada en agarres y ataques mas pesados y lentos 
 
 ## Funcionamiento
-El programa solo acepta comandos validos para la situacion en la que se esté (obviamente), por ejemplo, un movimiento aereo no podra ser ejecutado si el personaje esta en el suelo. Cuando el programa pide una entrada numerica y no se le es dada, el programa fallara. En caso de que una accion que se desea tomar no este implementada, el juego hara que el personaje del jugador no haga nada por ese turno (esperar)
+El programa solo acepta comandos validos para la situacion en la que se esté (obviamente), por ejemplo, un movimiento aereo no podra ser ejecutado si el personaje esta en el suelo. Cuando el programa pide una entrada numerica y no se le es dada, el programa fallara. En caso de que una accion que se desea tomar no este implementada o no sea valida para la situacion, el juego hara que el personaje del jugador no haga nada por ese turno (esperar).
 
 ## Instrucciones y Mas
 Solo hace falta escribir en la consola:
@@ -69,4 +79,3 @@ Pedira al jugador compenentes de un vector unitario 2d, luego lanzara al persona
 
 Wizzard : Geyser
 Ataque de Gran alcance, pero un tanto lento.
-
